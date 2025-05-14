@@ -7,5 +7,4 @@ public class CourseDTO {
     private Integer courseId;
     private String courseName;
     private Integer courseDays;
-
 }

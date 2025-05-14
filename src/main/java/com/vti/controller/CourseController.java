@@ -1,8 +1,11 @@
 package com.vti.controller;
 
 import com.vti.dto.CourseDTO;
+import com.vti.dto.LessonDTO;
 import com.vti.entity.Course;
+import com.vti.entity.Lesson;
 import com.vti.reponsitory.CourseReponsitory;
+import com.vti.reponsitory.LessonReponsitory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -15,9 +18,11 @@ import java.util.Optional;
 @RequestMapping("courses")
 public class CourseController {
     private final CourseReponsitory courseReponsitory;
+    private final LessonReponsitory lessonReponsitory;
 
-    public CourseController(CourseReponsitory courseReponsitory) {
+    public CourseController(CourseReponsitory courseReponsitory, LessonReponsitory lessonReponsitory) {
         this.courseReponsitory = courseReponsitory;
+        this.lessonReponsitory = lessonReponsitory;
     }
 
     @GetMapping
@@ -96,6 +101,20 @@ public class CourseController {
             return courseDTO;
         });
        return ResponseEntity.ok(courseDTOPage);
+    }
+
+    @PostMapping("/{courseId}/lessons")
+    public ResponseEntity<?> addLesson(@PathVariable Integer courseId,
+                                       @RequestBody Lesson lesson) {
+        Course course = courseReponsitory.findById(courseId).orElse(null);
+        if (course == null) {
+            return ResponseEntity.badRequest().body("Course not found: " + courseId);
+        }
+
+        lesson.setCourse(course);
+        lessonReponsitory.save(lesson);
+        Lesson savedLesson = lessonReponsitory.save(lesson);
+        return ResponseEntity.ok(savedLesson);
     }
 }
 
