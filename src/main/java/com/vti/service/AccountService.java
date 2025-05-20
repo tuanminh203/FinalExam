@@ -5,6 +5,7 @@ import com.vti.dto.AccountUpdateDTO;
 import com.vti.entity.Account;
 import com.vti.reponsitory.AccountRepository;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +23,7 @@ import java.util.Optional;
 public class AccountService implements IAccountService {
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
 
     @Override
     public void register(AccountRegisterRequestDTO accountRegisterRequestDTO) {
@@ -29,14 +31,12 @@ public class AccountService implements IAccountService {
         if(accountRepository.existsByUsername(accountRegisterRequestDTO.getUsername())){
             throw new RuntimeException("Username is already in use");
         }
-        // Tạo một đối tượng Account từ DTO, lưu vào cơ sở dữ liệu
-        Account account = new Account();
-        account.setUsername(accountRegisterRequestDTO.getUsername());
+
+        Account account = modelMapper.map(accountRegisterRequestDTO, Account.class);
+
+        // Gán các trường cần xử lý đặc biệt
         account.setPassword(passwordEncoder.encode(accountRegisterRequestDTO.getPassword()));
-        account.setEmail(accountRegisterRequestDTO.getEmail());
         account.setRole(accountRegisterRequestDTO.getRole().toUpperCase());
-        account.setBirthDate(accountRegisterRequestDTO.getBirthDate());
-        account.setAddress(accountRegisterRequestDTO.getAddress());
         account.setCreatedAt(LocalDateTime.now());
         account.setUpdatedAt(LocalDateTime.now());
 
@@ -45,23 +45,25 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public void updateAccount(Integer id, AccountRegisterRequestDTO
-                                          accountRegisterRequestDTO) {
-        if (accountRepository.existsById(id)) {
+    public void updateAccount(Integer id, AccountRegisterRequestDTO accountRegisterRequestDTO) {
+        Optional<Account> accountOptional = accountRepository.findById(id);
+        if (accountOptional.isEmpty()) {
             throw new RuntimeException("ID not found: " + id);
         }
-        Optional<Account> accountOptional = accountRepository.findById(id);
+
         Account existingAccount = accountOptional.get();
-        existingAccount.setUsername(accountRegisterRequestDTO.getUsername());
+
+        // Map các trường từ DTO sang đối tượng đã có
+        modelMapper.map(accountRegisterRequestDTO, existingAccount);
+
+        // Gán lại các trường cần xử lý đặc biệt
         existingAccount.setPassword(passwordEncoder.encode(accountRegisterRequestDTO.getPassword()));
-        existingAccount.setEmail(accountRegisterRequestDTO.getEmail());
         existingAccount.setRole(accountRegisterRequestDTO.getRole().toUpperCase());
-        existingAccount.setBirthDate(accountRegisterRequestDTO.getBirthDate());
-        existingAccount.setAddress(accountRegisterRequestDTO.getAddress());
+        existingAccount.setUpdatedAt(LocalDateTime.now());
 
         accountRepository.save(existingAccount);
-
     }
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
