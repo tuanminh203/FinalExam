@@ -1,26 +1,31 @@
 package com.vti.controller;
 
 import com.vti.dto.CourseDTO;
-import com.vti.dto.LessonDTO;
+import com.vti.dto.CoursePageDTO;
 import com.vti.entity.Course;
 import com.vti.entity.Lesson;
 import com.vti.reponsitory.CourseReponsitory;
 import com.vti.reponsitory.LessonReponsitory;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("courses")
 public class CourseController {
+    private final ModelMapper modelMapper;
     private final CourseReponsitory courseReponsitory;
     private final LessonReponsitory lessonReponsitory;
 
-    public CourseController(CourseReponsitory courseReponsitory, LessonReponsitory lessonReponsitory) {
+    public CourseController(ModelMapper modelMapper, CourseReponsitory courseReponsitory, LessonReponsitory lessonReponsitory) {
+        this.modelMapper = modelMapper;
         this.courseReponsitory = courseReponsitory;
         this.lessonReponsitory = lessonReponsitory;
     }
@@ -28,26 +33,23 @@ public class CourseController {
     @GetMapping
     public ResponseEntity<?> getAll(Pageable pageable) {
         Page<Course> coursePage = courseReponsitory.findAll(pageable);
-        Page<CourseDTO> courseDTOPage = coursePage.map(course -> {
-            CourseDTO courseDTO = new CourseDTO();
-            courseDTO.setCourseId(course.getCourseId());
-            courseDTO.setCourseName(course.getCourseName());
-            courseDTO.setCourseDays(course.getCourseDays());
-            return courseDTO;
-        });
-        return ResponseEntity.ok(courseDTOPage);
+        List<Course> courses = coursePage.getContent();
+        List<CourseDTO> courseDTOS = modelMapper.map(courses,
+                                                     new TypeToken<List<CourseDTO>>() {}.getType());
+        CoursePageDTO coursePageDTO = new CoursePageDTO();
+        coursePageDTO.setCourseDTOS(courseDTOS);
+        coursePageDTO.setTotalPage(coursePage.getTotalPages());
+        coursePageDTO.setTotalElement(coursePage.getTotalElements());
+        return ResponseEntity.ok(coursePageDTO);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Integer id) {
         Optional<Course> course = courseReponsitory.findById(id);
         if (course.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.badRequest().body("Course not found: " +id);
         } else {
-            CourseDTO courseDTO = new CourseDTO();
-            courseDTO.setCourseId(course.get().getCourseId());
-            courseDTO.setCourseName(course.get().getCourseName());
-            courseDTO.setCourseDays(course.get().getCourseDays());
+            CourseDTO courseDTO = modelMapper.map(course.get(), CourseDTO.class);
             return ResponseEntity.ok(courseDTO);
         }
     }
@@ -91,16 +93,17 @@ public class CourseController {
     }
 
     @GetMapping("/search/{courseName}")
-    public ResponseEntity<?> searchByName(@PathVariable String courseName, Pageable pageable) {
+    public ResponseEntity<?> searchByName(@PathVariable String courseName,
+                                          Pageable pageable) {
         Page<Course> coursePage = courseReponsitory.findByCourseName(courseName, pageable);
-        Page<CourseDTO> courseDTOPage = coursePage.map(course -> {
-            CourseDTO courseDTO = new CourseDTO();
-            courseDTO.setCourseId(course.getCourseId());
-            courseDTO.setCourseName(course.getCourseName());
-            courseDTO.setCourseDays(course.getCourseDays());
-            return courseDTO;
-        });
-       return ResponseEntity.ok(courseDTOPage);
+        List<Course> courses = coursePage.getContent();
+        List<CourseDTO> courseDTOS = modelMapper.map(courses,
+                new TypeToken<List<CourseDTO>>() {}.getType());
+        CoursePageDTO coursePageDTO = new CoursePageDTO();
+        coursePageDTO.setCourseDTOS(courseDTOS);
+        coursePageDTO.setTotalPage(coursePage.getTotalPages());
+        coursePageDTO.setTotalElement(coursePage.getTotalElements());
+        return ResponseEntity.ok(coursePageDTO);
     }
 
     @PostMapping("/{courseId}/lessons")
