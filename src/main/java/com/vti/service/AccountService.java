@@ -1,7 +1,6 @@
 package com.vti.service;
 
 import com.vti.dto.AccountRegisterRequestDTO;
-import com.vti.dto.AccountUpdateDTO;
 import com.vti.entity.Account;
 import com.vti.reponsitory.AccountRepository;
 import lombok.RequiredArgsConstructor;
