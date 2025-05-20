@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("lessons")
+@RequestMapping("/api/lessons")
 public class LessonController {
     private final LessonReponsitory lessonReponsitory;
     public LessonController(LessonReponsitory lessonReponsitory) {
