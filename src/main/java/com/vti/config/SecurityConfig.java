@@ -21,8 +21,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Tắt CSRF cho REST API nếu bạn không dùng session
                 .authorizeHttpRequests(authorize -> authorize // Gộp tất cả requestMatchers vào một khối
                         .requestMatchers("/api/auth/**").permitAll()// Cho phép tất cả các đường dẫn dưới /api/auth
-                        .requestMatchers("/api/courses/**").permitAll()
-                        .requestMatchers("/api/lessons/**").permitAll()
+                        .requestMatchers("/api/courses/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/lessons/**").hasRole("ADMIN")
 
                         // Cho phép truy cập Swagger UI và các tài nguyên liên quan
                         .requestMatchers("/swagger-ui.html",
@@ -33,6 +33,6 @@ public class SecurityConfig {
                 );
 //        .httpBasic(Customizer.withDefaults()); // Bỏ qua nếu không dùng Basic Auth
 
-        return http.build(); // Chỉ cần build() sau khi cấu hình xong
+        return http.httpBasic().and().build(); // Chỉ cần build() sau khi cấu hình xong
     }
 }
