@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LessonReponsitory extends JpaRepository<Lesson, Integer> {
-    Lesson findByLessonNameAndLessonId(String lessonName, Integer lessonId);
 }
