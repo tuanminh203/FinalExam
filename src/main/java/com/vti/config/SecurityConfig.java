@@ -33,6 +33,6 @@ public class SecurityConfig {
                 );
 //        .httpBasic(Customizer.withDefaults()); // Bỏ qua nếu không dùng Basic Auth
 
-        return http.httpBasic().and().build(); // Chỉ cần build() sau khi cấu hình xong
+        return http.httpBasic().and().build();
     }
 }
