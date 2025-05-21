@@ -9,10 +9,4 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class LessonService implements ILessonService{
-    @Autowired
-    private LessonReponsitory lessonReponsitory;
-    @Override
-    public Page<Lesson> getLessonById(Integer lessonId, Pageable pageable) {
-        return lessonReponsitory.findByLessonId(lessonId, pageable);
-    }
 }

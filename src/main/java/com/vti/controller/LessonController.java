@@ -1,33 +1,52 @@
 package com.vti.controller;
 
 import com.vti.dto.LessonDTO;
+import com.vti.dto.LessonPageDTO;
 import com.vti.entity.Lesson;
 import com.vti.reponsitory.LessonReponsitory;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/lessons")
 public class LessonController {
     private final LessonReponsitory lessonReponsitory;
-    public LessonController(LessonReponsitory lessonReponsitory) {
+    private final ModelMapper modelMapper;
+
+    public LessonController(LessonReponsitory lessonReponsitory, ModelMapper modelMapper) {
         this.lessonReponsitory = lessonReponsitory;
+        this.modelMapper = modelMapper;
     }
-    @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable Integer id,
-                                      Pageable pageable) {
-        Page<Lesson> lessonPage = lessonReponsitory.findByLessonId(id, pageable);
-        Page<LessonDTO> lessonDTOPage = lessonPage.map(lesson -> {
-            LessonDTO lessonDTO = new LessonDTO();
-            lessonDTO.setLessonName(lesson.getLessonName());
-            lessonDTO.setLessonHours(lesson.getLessonHours());
-            lessonDTO.setLessonDays(lesson.getLessonDays());
-            lessonDTO.setLessonDescription(lesson.getLessonDescription());
-            return lessonDTO;
-        });
+    @GetMapping
+    public ResponseEntity<?> getAll(Pageable pageable) {
+        Page<Lesson> lessonPage = lessonReponsitory.findAll(pageable);
+        List<Lesson> lessons = lessonPage.getContent();
+        List<LessonDTO> lessonDTOS = modelMapper.map(lessons,
+                new TypeToken<List<LessonDTO>>() {}.getType());
+        LessonPageDTO lessonDTOPage = new LessonPageDTO();
+        lessonDTOPage.setLessonDTOS(lessonDTOS);
+        lessonDTOPage.setTotalPage(lessonPage.getTotalPages());
+        lessonDTOPage.setTotalElement(lessonPage.getTotalElements());
+
         return ResponseEntity.ok(lessonDTOPage);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable Integer id) {
+        Optional<Lesson> optionalLesson = lessonReponsitory.findById(id);
+        if(optionalLesson.isEmpty()) {
+            return ResponseEntity.badRequest().body("Lesson not found: " +id);
+        }
+
+        LessonDTO lessonDTO = modelMapper.map(optionalLesson.get(), LessonDTO.class);
+        return ResponseEntity.ok(lessonDTO);
     }
 
     @PutMapping("/{id}")

@@ -11,6 +11,4 @@ import static org.hibernate.sql.ast.Clause.FROM;
 
 @Repository
 public interface LessonReponsitory extends JpaRepository<Lesson, Integer> {
-    @Query("FROM Lesson l WHERE l.lessonId = :lessonId")
-    Page<Lesson> findByLessonId(Integer lessonId, Pageable pageable);
 }
