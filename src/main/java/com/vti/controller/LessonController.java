@@ -21,9 +21,9 @@ public class LessonController {
         Page<Lesson> lessonPage = lessonReponsitory.findByLessonId(id, pageable);
         Page<LessonDTO> lessonDTOPage = lessonPage.map(lesson -> {
             LessonDTO lessonDTO = new LessonDTO();
-            lessonDTO.setLessonId(lesson.getLessonId());
             lessonDTO.setLessonName(lesson.getLessonName());
             lessonDTO.setLessonHours(lesson.getLessonHours());
+            lessonDTO.setLessonDays(lesson.getLessonDays());
             lessonDTO.setLessonDescription(lesson.getLessonDescription());
             return lessonDTO;
         });

@@ -2,6 +2,7 @@ package com.vti.controller;
 
 import com.vti.dto.CourseDTO;
 import com.vti.dto.CoursePageDTO;
+import com.vti.dto.LessonDTO;
 import com.vti.entity.Course;
 import com.vti.entity.Lesson;
 import com.vti.reponsitory.CourseReponsitory;
@@ -123,14 +124,18 @@ public class CourseController {
 
     @PostMapping("/{courseId}/lessons")
     public ResponseEntity<?> addLesson(@PathVariable Integer courseId,
-                                       @RequestBody Lesson lesson) {
+                                       @RequestBody LessonDTO lessonDTO) {
         Course course = courseReponsitory.findById(courseId).orElse(null);
         if (course == null) {
             return ResponseEntity.badRequest().body("Course not found: " + courseId);
         }
+        //Map DTO -> Entity
+        Lesson lesson = modelMapper.map(lessonDTO, Lesson.class);
 
+        //Set course for lesson
         lesson.setCourse(course);
-        lessonReponsitory.save(lesson);
+
+        //Save lesson
         Lesson savedLesson = lessonReponsitory.save(lesson);
         return ResponseEntity.ok(savedLesson);
     }

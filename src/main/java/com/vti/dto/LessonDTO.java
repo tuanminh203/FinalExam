@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class LessonDTO {
-    private Integer lessonId;
     private String lessonName;
-    private String lessonDescription;
+    private Integer lessonDays;
     private Integer lessonHours;;
+    private String lessonDescription;
 }
