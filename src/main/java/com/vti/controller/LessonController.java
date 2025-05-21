@@ -33,15 +33,22 @@ public class LessonController {
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Integer id,
                                     @RequestBody LessonDTO lessonDTO) {
-        Lesson lesson = lessonReponsitory.findById(id).orElse(null);
-        if (lesson == null) {
+        if(lessonDTO.getLessonName() == null){
+            return ResponseEntity.badRequest().body("Lesson name is required");
+        }
+
+        Lesson existingLesson = lessonReponsitory.findById(id).orElse(null);
+        if (existingLesson == null) {
             return ResponseEntity.badRequest().body("Lesson not found: " +id);
         }
-        lesson.setLessonName(lessonDTO.getLessonName());
-        lesson.setLessonHours(lessonDTO.getLessonHours());
-        lesson.setLessonDescription(lessonDTO.getLessonDescription());
-        lessonReponsitory.save(lesson);
-        return ResponseEntity.ok("Lesson updated successfully");
+
+        existingLesson.setLessonName(lessonDTO.getLessonName());
+        existingLesson.setLessonHours(lessonDTO.getLessonHours());
+        existingLesson.setLessonDays(lessonDTO.getLessonDays());
+        existingLesson.setLessonDescription(lessonDTO.getLessonDescription());
+
+        Lesson updatedLesson = lessonReponsitory.save(existingLesson);
+        return ResponseEntity.ok(updatedLesson);
     }
 
     @DeleteMapping("/{id}")
