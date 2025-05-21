@@ -11,6 +11,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CourseReponsitory extends JpaRepository<Course, Integer> {
     Page<Course> findByCourseName(String courseName, Pageable pageable);
-
     boolean existsByCourseName(@NotBlank String courseName);
 }

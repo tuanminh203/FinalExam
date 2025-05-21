@@ -127,14 +127,12 @@ public class CourseController {
         if (course == null) {
             return ResponseEntity.badRequest().body("Course not found: " + courseId);
         }
-        //Map DTO -> Entity
-        Lesson lesson = modelMapper.map(lessonDTO, Lesson.class);
 
-        //Set course for lesson
-        lesson.setCourse(course);
+        Lesson lessonDTOS = modelMapper.map(lessonDTO, Lesson.class);
+        lessonDTOS.setCourse(course);
 
         //Save lesson
-        Lesson savedLesson = lessonReponsitory.save(lesson);
+        Lesson savedLesson = lessonReponsitory.save(lessonDTOS);
         return ResponseEntity.ok(savedLesson);
     }
 }
