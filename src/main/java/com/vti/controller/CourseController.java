@@ -7,7 +7,6 @@ import com.vti.entity.Course;
 import com.vti.entity.Lesson;
 import com.vti.reponsitory.CourseReponsitory;
 import com.vti.reponsitory.LessonReponsitory;
-import com.vti.service.CourseService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
@@ -48,13 +47,12 @@ public class CourseController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Integer id) {
-        Optional<Course> course = courseReponsitory.findById(id);
-        if (course.isEmpty()) {
+        Optional<Course> courseOptional = courseReponsitory.findById(id);
+        if (courseOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Course not found: " +id);
-        } else {
-            CourseDTO courseDTO = modelMapper.map(course.get(), CourseDTO.class);
-            return ResponseEntity.ok(courseDTO);
         }
+            CourseDTO courseDTO = modelMapper.map(courseOptional.get(), CourseDTO.class);
+            return ResponseEntity.ok(courseDTO);
     }
 
     @PostMapping
