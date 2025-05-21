@@ -1,6 +1,7 @@
 package com.vti.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 @Entity
@@ -14,8 +15,11 @@ public class Lesson {
     @Column(nullable = false, length = 100)
     private String lessonName;
 
-    @Column(nullable = false)
+    @Min(value = 1)
     private Integer lessonHours;
+
+    @Min(value = 1)
+    private Integer lessonDays;
 
     @Column(columnDefinition = "TEXT")
     private String lessonDescription;

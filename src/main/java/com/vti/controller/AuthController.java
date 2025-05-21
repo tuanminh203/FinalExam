@@ -1,7 +1,6 @@
 package com.vti.controller;
 
 import com.vti.dto.AccountRegisterRequestDTO;
-import com.vti.dto.AccountUpdateDTO;
 import com.vti.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

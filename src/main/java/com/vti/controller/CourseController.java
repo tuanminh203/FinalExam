@@ -6,6 +6,7 @@ import com.vti.entity.Course;
 import com.vti.entity.Lesson;
 import com.vti.reponsitory.CourseReponsitory;
 import com.vti.reponsitory.LessonReponsitory;
+import com.vti.service.CourseService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
@@ -35,11 +36,12 @@ public class CourseController {
         Page<Course> coursePage = courseReponsitory.findAll(pageable);
         List<Course> courses = coursePage.getContent();
         List<CourseDTO> courseDTOS = modelMapper.map(courses,
-                                                     new TypeToken<List<CourseDTO>>() {}.getType());
+                new TypeToken<List<CourseDTO>>() {}.getType());
         CoursePageDTO coursePageDTO = new CoursePageDTO();
         coursePageDTO.setCourseDTOS(courseDTOS);
         coursePageDTO.setTotalPage(coursePage.getTotalPages());
         coursePageDTO.setTotalElement(coursePage.getTotalElements());
+
         return ResponseEntity.ok(coursePageDTO);
     }
 
@@ -55,30 +57,43 @@ public class CourseController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Course course) {
-        if (course.getCourseName() == null || course.getCourseDays() <= 0) {
-            return ResponseEntity.badRequest().body("Invalid course data");
+    public ResponseEntity<?> create(@RequestBody CourseDTO courseDTO) {
+        if(courseDTO.getCourseName() == null) {
+            return ResponseEntity.badRequest().body("Course name is required");
+        } else if (courseDTO.getCourseDays() <1) {
+            return ResponseEntity.badRequest().body("Course days must be greater than 0");
+        } else if (courseDTO.getCourseHours() <1) {
+            return ResponseEntity.badRequest().body("Course hours must be greater than 0");
+        } else if (courseReponsitory.existsByCourseName(courseDTO.getCourseName())) {
+            return ResponseEntity.badRequest().body("Course name already exists");
         }
-        Course savedCourse = courseReponsitory.save(course);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedCourse);
+
+        CourseDTO courseDTOS = modelMapper.map(courseDTO, CourseDTO.class);
+        return ResponseEntity.status(HttpStatus.CREATED).body(courseDTOS);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Integer id,
-                                    @RequestBody Course course) {
-        if (course.getCourseName() == null || course.getCourseDays() <= 0) {
-            return ResponseEntity.badRequest().body("Invalid course data");
+                                    @RequestBody CourseDTO courseDTO) {
+        if (courseDTO.getCourseDays() <1) {
+            return ResponseEntity.badRequest().body("Course days must be greater than 0");
+        } else if (courseDTO.getCourseHours() <1) {
+            return ResponseEntity.badRequest().body("Course hours must be greater than 0");
         }
-        Optional<Course> courseOptional = courseReponsitory.findById(id);
-        if (courseOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        } else {
-            Course existingCourse = courseOptional.get();
-            existingCourse.setCourseName(course.getCourseName());
-            existingCourse.setCourseDays(course.getCourseDays());
-            courseReponsitory.save(existingCourse);
-            return ResponseEntity.ok(existingCourse);
+
+        Course existingCourse = courseReponsitory.findById(id).orElse(null);
+        if (existingCourse == null) {
+            return ResponseEntity.badRequest().body("Course not found with id: " + id);
         }
+
+        // Chỉ cập nhật các trường cần thiết
+        existingCourse.setCourseName(courseDTO.getCourseName());
+        existingCourse.setCourseDays(courseDTO.getCourseDays());
+        existingCourse.setCourseHours(courseDTO.getCourseHours());
+        existingCourse.setCourseDescription(courseDTO.getCourseDescription());
+
+        Course updated = courseReponsitory.save(existingCourse);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")

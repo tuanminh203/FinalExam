@@ -1,6 +1,8 @@
 package com.vti.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.List;
@@ -13,13 +15,14 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer courseId;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, unique = true, length = 100)
+    @NotBlank
     private String courseName;
 
-    @Column(nullable = false)
+    @Min(value = 1)
     private Integer courseHours;
 
-    @Column(nullable = false)
+    @Min(value = 1)
     private Integer courseDays;
 
     @Column(columnDefinition = "TEXT")
